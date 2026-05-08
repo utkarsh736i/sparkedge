@@ -59,7 +59,7 @@ if (!cfg || !cfg.apiKey || cfg.apiKey.startsWith('YOUR_')) {
       };
 
       // Wire up DB helpers (same pattern as before)
-      const refPath = cfg.refPath || 'Vicharak Shrike Lite';
+      const refPath = cfg.refPath || 'shrike01';
       window._db          = database;
       window._makeRef     = (path) => ref(database, path);
       window._dbRef       = ref(database, refPath);
