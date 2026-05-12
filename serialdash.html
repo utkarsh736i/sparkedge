@@ -191,8 +191,12 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
       <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span id="userEmail">—</span>
     </div>
-    <button class="hbtn" onclick="exportCSV()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
-    <button class="hbtn" onclick="authLogout?authLogout():window.location.href='login.html'"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out</button>
+    <div class="alm-hbtn-wrap">
+      <button class="hbtn" onclick="openAlarmDrawer()" title="Alarm Settings" style="padding:5px 10px;gap:4px;"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Alarms</button>
+      <span class="alm-badge-ct" id="almBadge">0</span>
+    </div>
+    <button class="hbtn" onclick="exportCSV()" title="Export CSV" style="padding:5px 10px;"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV</button>
+    <button class="hbtn" onclick="authLogout?authLogout():window.location.href='login.html'" title="Sign Out" style="padding:5px 10px;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Out</button>
     <div class="clock"><div class="clock-t" id="clockT">--:--:--</div><div class="clock-d" id="clockD">---</div></div>
   </div>
 </header>
