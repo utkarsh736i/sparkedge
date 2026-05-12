@@ -1018,49 +1018,13 @@ async function aiSend(customMsg){
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + aiKey
       },
-      const sensorText = JSON.stringify(sessionData, null, 2);
-
-const apiMessages = [
-  {
-    role: "system",
-    content: "You are an industrial IoT AI assistant analyzing realtime sensor telemetry."
-  },
-  {
-    role: "user",
-    content: `
-Sensor Data:
-${sensorText}
-
-Question:
-${prompt}
-`
-  }
-];
-
-const resp = await fetch(
-  "https://api.openai.com/v1/chat/completions",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      messages: apiMessages,
-      temperature: 0.3,
-      max_tokens: 400
-    })
-  }
-);
-
-const data = await resp.json();
-
-console.log(data);
-
-if (!resp.ok) {
-  throw new Error(data.error?.message || "API failed");
-}
+      body: JSON.stringify({
+        model: 'gpt-4.1-mini',
+        messages: apiMessages,
+        max_tokens: 600,
+        temperature: 0.3,
+        stream: false
+      })
     });
 
     if(!resp.ok){
