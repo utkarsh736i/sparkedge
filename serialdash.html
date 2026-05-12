@@ -9,7 +9,8 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;}
-:root{--bg:#f4f7fb;--bg2:#eef2f7;--card:#ffffff;--border:#dde4ef;--bdr2:#c5d1e8;--bdr3:#a0b4d6;--blue:#2563eb;--blue3:#3b82f6;--red:#dc2626;--orange:#f97316;--green:#16a34a;--t1:#0f172a;--t2:#334155;--t3:#64748b;--t4:#94a3b8;--sh:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--sh2:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.06);}
+:root{--bg:#f4f7fb;--bg2:#eef2f7;--card:#ffffff;--border:#dde4ef;--bdr2:#c5d1e8;--bdr3:#a0b4d6;--blue:#2563eb;--blue3:#3b82f6;--red:#dc2626;--orange:#f97316;--green:#16a34a;--t1:#0f172a;--t2:#334155;--t3:#64748b;--t4:#94a3b8;--sh:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--sh2:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.06);
+--oai:#10a37f;}
 body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;display:flex;flex-direction:column;}
 .hdr{flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 22px;height:56px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);z-index:100;}
 .brand{display:flex;align-items:center;gap:9px;text-decoration:none;}
@@ -175,6 +176,86 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
 .ccard.alm-warn{border-left:3px solid var(--orange)!important;}
 .scard.alm-firing{border-top-color:var(--red)!important;animation:cp 1.5s infinite!important;}
 .scard.alm-warn{border-top-color:var(--orange)!important;}
+
+/* ══════════════════════════════════════════════════════════════
+   AI ANALYSIS DRAWER — OpenAI-powered
+══════════════════════════════════════════════════════════════ */
+.ai-drawer{position:fixed;top:0;left:0;width:440px;height:100vh;background:white;border-right:1px solid var(--bdr2);box-shadow:4px 0 32px rgba(0,0,0,.12);z-index:910;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .30s cubic-bezier(.4,0,.2,1);}
+.ai-drawer.open{transform:translateX(0);}
+
+.ai-drawer-hdr{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:white;}
+.ai-logo{width:26px;height:26px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:6px;background:#000;}
+.ai-logo svg{width:16px;height:16px;fill:white;}
+.ai-drawer-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;color:var(--t1);}
+.ai-drawer-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);}
+.ai-close{margin-left:auto;padding:4px 12px;border-radius:6px;border:1px solid var(--bdr2);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--t3);background:transparent;cursor:pointer;transition:all .15s;}
+.ai-close:hover{border-color:var(--red);color:var(--red);}
+
+/* API Key bar */
+.ai-key-bar{display:flex;align-items:center;gap:7px;padding:8px 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2);}
+.ai-key-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);letter-spacing:.5px;white-space:nowrap;}
+.ai-key-input{flex:1;background:white;border:1px solid var(--bdr2);border-radius:6px;padding:5px 9px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t1);outline:none;transition:border-color .15s;}
+.ai-key-input:focus{border-color:var(--oai);}
+.ai-key-save{padding:5px 12px;border-radius:6px;border:1px solid var(--oai);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--oai);background:rgba(16,163,127,.06);cursor:pointer;white-space:nowrap;transition:all .15s;}
+.ai-key-save:hover{background:rgba(16,163,127,.14);}
+.ai-key-status{width:7px;height:7px;border-radius:50%;background:var(--t4);flex-shrink:0;}
+.ai-key-status.set{background:var(--oai);}
+
+/* Context bar */
+.ai-ctx-bar{display:flex;align-items:center;gap:6px;padding:6px 18px;border-bottom:1px solid var(--border);flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);flex-wrap:wrap;}
+.ai-ctx-bar-lbl{margin-right:2px;white-space:nowrap;}
+.ai-ctx-btn{padding:2px 9px;border-radius:10px;border:1px solid var(--bdr2);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;color:var(--t3);background:transparent;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ai-ctx-btn.on{border-color:var(--oai);color:var(--oai);background:rgba(16,163,127,.06);}
+.ai-ctx-pts{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);}
+
+/* Messages */
+.ai-messages{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px;}
+.ai-messages::-webkit-scrollbar{width:3px;}
+.ai-messages::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px;}
+
+.ai-msg{display:flex;flex-direction:column;gap:3px;max-width:94%;}
+.ai-msg.user{align-self:flex-end;align-items:flex-end;}
+.ai-msg.assistant{align-self:flex-start;align-items:flex-start;}
+
+.ai-bubble{padding:9px 13px;border-radius:12px;font-family:'Open Sans',sans-serif;font-size:12px;line-height:1.65;white-space:pre-wrap;word-break:break-word;}
+.ai-msg.user .ai-bubble{background:var(--blue);color:white;border-bottom-right-radius:3px;}
+.ai-msg.assistant .ai-bubble{background:var(--bg2);color:var(--t1);border:1px solid var(--border);border-bottom-left-radius:3px;}
+.ai-msg.assistant .ai-bubble.loading{color:var(--t4);}
+
+/* typing dots */
+.ai-typing{display:inline-flex;gap:4px;align-items:center;padding:2px 0;}
+.ai-typing span{width:5px;height:5px;border-radius:50%;background:var(--t4);animation:td .9s infinite;}
+.ai-typing span:nth-child(2){animation-delay:.2s;}
+.ai-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes td{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
+.ai-meta{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);}
+
+/* Empty state */
+.ai-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:10px;padding:24px;text-align:center;}
+.ai-empty-icon{width:48px;height:48px;border-radius:14px;background:#000;display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+.ai-empty-icon svg{width:28px;height:28px;fill:white;}
+.ai-empty h4{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--t2);}
+.ai-empty p{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t4);max-width:300px;line-height:1.8;}
+
+/* Quick prompt buttons */
+.ai-quick{display:flex;flex-wrap:wrap;gap:5px;padding:8px 18px;border-top:1px solid var(--border);flex-shrink:0;}
+.ai-qbtn{padding:4px 11px;border-radius:12px;border:1px solid var(--bdr2);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;color:var(--t3);background:transparent;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ai-qbtn:hover{border-color:var(--oai);color:var(--oai);background:rgba(16,163,127,.05);}
+
+/* Input bar */
+.ai-input-bar{display:flex;align-items:flex-end;gap:8px;padding:10px 18px;border-top:1px solid var(--border);flex-shrink:0;background:white;}
+.ai-textarea{flex:1;background:var(--bg2);border:1px solid var(--bdr2);border-radius:10px;padding:8px 12px;font-family:'Open Sans',sans-serif;font-size:12px;color:var(--t1);outline:none;resize:none;max-height:100px;min-height:36px;line-height:1.5;transition:border-color .15s;}
+.ai-textarea:focus{border-color:var(--oai);background:white;}
+.ai-send-btn{width:34px;height:34px;border-radius:8px;border:none;background:#000;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s;}
+.ai-send-btn:hover{opacity:.8;}
+.ai-send-btn:disabled{opacity:.35;cursor:not-allowed;}
+.ai-send-btn svg{width:14px;height:14px;fill:white;}
+
+/* Header button for AI */
+.ai-hbtn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;border:1px solid var(--bdr2);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--t3);background:transparent;cursor:pointer;transition:all .15s;}
+.ai-hbtn:hover{border-color:var(--oai);color:var(--oai);background:rgba(16,163,127,.05);}
+.ai-hbtn svg{width:14px;height:14px;fill:currentColor;}
 </style>
 </head>
 <body>
@@ -191,6 +272,16 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
       <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span id="userEmail">—</span>
     </div>
+
+    <!-- ── AI Analysis button ── -->
+    <button class="ai-hbtn" onclick="openAIDrawer()" title="AI Data Analysis">
+      <!-- OpenAI logo SVG -->
+      <svg viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg" style="width:14px;height:14px;fill:currentColor;">
+        <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.211-3.74 10.079 10.079 0 0 0-11.761 4.132 9.964 9.964 0 0 0-3.736 6.209 10.078 10.078 0 0 0-4.835 10.854 9.964 9.964 0 0 0 3.74 6.212 10.079 10.079 0 0 0 4.836 10.855 9.965 9.965 0 0 0 8.185.856 9.965 9.965 0 0 0 6.21 3.74 10.079 10.079 0 0 0 11.762-4.132 9.965 9.965 0 0 0 3.736-6.209 10.078 10.078 0 0 0 4.835-10.854 9.963 9.963 0 0 0-3.74-6.212zm-5.151 14.325c-.473.827-1.182 1.494-2.037 1.918l.059-7.783-6.46 3.718-3.717-6.46 6.46-3.717-6.46-3.717 3.717-6.461 6.46 3.717-.059-7.783a7.44 7.44 0 0 1 2.037 1.918 7.476 7.476 0 0 1 .638 6.993 7.44 7.44 0 0 1 0 7.737 7.444 7.444 0 0 1-.638 6.92zm-20.7-16.586l-3.717 6.461-6.46-3.718.059 7.784a7.44 7.44 0 0 1-2.037-1.918 7.476 7.476 0 0 1-.638-6.993 7.44 7.44 0 0 1 0-7.737 7.444 7.444 0 0 1 .638-6.92 7.44 7.44 0 0 1 2.037-1.918l-.059 7.783 6.46-3.718 3.717 6.461-6.46 3.717 6.46 3.717z"/>
+      </svg>
+      AI Analysis
+    </button>
+
     <div class="alm-hbtn-wrap">
       <button class="hbtn" onclick="openAlarmDrawer()" title="Alarm Settings" style="padding:5px 10px;gap:4px;"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Alarms</button>
       <span class="alm-badge-ct" id="almBadge">0</span>
@@ -200,6 +291,7 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
     <div class="clock"><div class="clock-t" id="clockT">--:--:--</div><div class="clock-d" id="clockD">---</div></div>
   </div>
 </header>
+
 <div class="cbar">
   <span class="clbl">BAUD</span>
   <select class="csel" id="portBaud">
@@ -212,6 +304,7 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
   <div class="fb-pill"><div class="fb-dot" id="fbDot"></div><span id="fbTxt">Firebase: waiting…</span></div>
   <button class="cbtn exp" onclick="exportCSV()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
 </div>
+
 <div class="rbar">
   <span class="rlbl">SESSION VIEW</span>
   <button class="rbtn on" onclick="setView(this,50)">Last 50</button>
@@ -220,6 +313,7 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
   <button class="rbtn" onclick="setView(this,0)">All</button>
   <div class="rstats"><span>Records <b id="sRec">0</b></span><span>Sensors <b id="sSen">0</b></span><span>Updated <b id="sLast">--</b></span></div>
 </div>
+
 <div class="ws" id="ws">
   <div class="state-card" id="emptyState">
     <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
@@ -227,7 +321,9 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
     <p>Select baud rate and click <b>Connect Serial</b> to read from your microcontroller.<br>Data pushes to Firebase automatically via your login session.</p>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
+
 <!-- ── Alarm Settings Drawer ───────────────────────────────────────────────── -->
 <div class="alm-drawer" id="almDrawer">
   <div class="alm-drawer-hdr">
@@ -249,6 +345,75 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════════
+     AI ANALYSIS DRAWER
+══════════════════════════════════════════════════════════════ -->
+<div class="ai-drawer" id="aiDrawer">
+  <!-- Header -->
+  <div class="ai-drawer-hdr">
+    <div class="ai-logo">
+      <svg viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg">
+        <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.211-3.74 10.079 10.079 0 0 0-11.761 4.132 9.964 9.964 0 0 0-3.736 6.209 10.078 10.078 0 0 0-4.835 10.854 9.964 9.964 0 0 0 3.74 6.212 10.079 10.079 0 0 0 4.836 10.855 9.965 9.965 0 0 0 8.185.856 9.965 9.965 0 0 0 6.21 3.74 10.079 10.079 0 0 0 11.762-4.132 9.965 9.965 0 0 0 3.736-6.209 10.078 10.078 0 0 0 4.835-10.854 9.963 9.963 0 0 0-3.74-6.212zm-5.151 14.325c-.473.827-1.182 1.494-2.037 1.918l.059-7.783-6.46 3.718-3.717-6.46 6.46-3.717-6.46-3.717 3.717-6.461 6.46 3.717-.059-7.783a7.44 7.44 0 0 1 2.037 1.918 7.476 7.476 0 0 1 .638 6.993 7.44 7.44 0 0 1 0 7.737 7.444 7.444 0 0 1-.638 6.92zm-20.7-16.586l-3.717 6.461-6.46-3.718.059 7.784a7.44 7.44 0 0 1-2.037-1.918 7.476 7.476 0 0 1-.638-6.993 7.44 7.44 0 0 1 0-7.737 7.444 7.444 0 0 1 .638-6.92 7.44 7.44 0 0 1 2.037-1.918l-.059 7.783 6.46-3.718 3.717 6.461-6.46 3.717 6.46 3.717z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="ai-drawer-title">AI ANALYSIS</div>
+      <div class="ai-drawer-sub">Powered by GPT-4o</div>
+    </div>
+    <button class="ai-close" onclick="closeAIDrawer()">✕ Close</button>
+  </div>
+
+  <!-- API Key bar -->
+  <div class="ai-key-bar">
+    <span class="ai-key-lbl">API KEY</span>
+    <div class="ai-key-status" id="aiKeyStatus"></div>
+    <input class="ai-key-input" id="aiKeyInput" type="password" placeholder="sk-..." autocomplete="off" oninput="aiKeyChanged()">
+    <button class="ai-key-save" onclick="saveAIKey()">Save</button>
+  </div>
+
+  <!-- Context selector -->
+  <div class="ai-ctx-bar">
+    <span class="ai-ctx-bar-lbl">INCLUDE DATA:</span>
+    <button class="ai-ctx-btn on" id="ctxLast50"  onclick="setCtx(50,this)">Last 50 pts</button>
+    <button class="ai-ctx-btn"   id="ctxLast200" onclick="setCtx(200,this)">Last 200 pts</button>
+    <button class="ai-ctx-btn"   id="ctxAll"     onclick="setCtx(0,this)">All</button>
+    <span class="ai-ctx-pts" id="aiCtxPts"></span>
+  </div>
+
+  <!-- Messages -->
+  <div class="ai-messages" id="aiMessages">
+    <div class="ai-empty" id="aiEmpty">
+      <div class="ai-empty-icon">
+        <svg viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg">
+          <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.211-3.74 10.079 10.079 0 0 0-11.761 4.132 9.964 9.964 0 0 0-3.736 6.209 10.078 10.078 0 0 0-4.835 10.854 9.964 9.964 0 0 0 3.74 6.212 10.079 10.079 0 0 0 4.836 10.855 9.965 9.965 0 0 0 8.185.856 9.965 9.965 0 0 0 6.21 3.74 10.079 10.079 0 0 0 11.762-4.132 9.965 9.965 0 0 0 3.736-6.209 10.078 10.078 0 0 0 4.835-10.854 9.963 9.963 0 0 0-3.74-6.212zm-5.151 14.325c-.473.827-1.182 1.494-2.037 1.918l.059-7.783-6.46 3.718-3.717-6.46 6.46-3.717-6.46-3.717 3.717-6.461 6.46 3.717-.059-7.783a7.44 7.44 0 0 1 2.037 1.918 7.476 7.476 0 0 1 .638 6.993 7.44 7.44 0 0 1 0 7.737 7.444 7.444 0 0 1-.638 6.92zm-20.7-16.586l-3.717 6.461-6.46-3.718.059 7.784a7.44 7.44 0 0 1-2.037-1.918 7.476 7.476 0 0 1-.638-6.993 7.44 7.44 0 0 1 0-7.737 7.444 7.444 0 0 1 .638-6.92 7.44 7.44 0 0 1 2.037-1.918l-.059 7.783 6.46-3.718 3.717 6.461-6.46 3.717 6.46 3.717z"/>
+        </svg>
+      </div>
+      <h4>Ask GPT-4o anything</h4>
+      <p>Enter your OpenAI API key above, then ask questions about your live sensor data. Use the quick prompts below to get started.</p>
+    </div>
+  </div>
+
+  <!-- Quick prompt buttons -->
+  <div class="ai-quick" id="aiQuick">
+    <button class="ai-qbtn" onclick="aiQuickSend('Summarize all sensor readings and flag anything unusual.')">Summarize sensors</button>
+    <button class="ai-qbtn" onclick="aiQuickSend('Detect any trends or anomalies in the recent data.')">Detect anomalies</button>
+    <button class="ai-qbtn" onclick="aiQuickSend('Which sensor has the highest variance? What could cause this?')">High variance?</button>
+    <button class="ai-qbtn" onclick="aiQuickSend('Are any sensor values approaching critical thresholds? Give recommendations.')">Threshold risk</button>
+    <button class="ai-qbtn" onclick="aiQuickSend('Correlate the sensors — are any values moving together?')">Correlations</button>
+    <button class="ai-qbtn" onclick="aiQuickSend('What is the rate of change for each sensor over the captured period?')">Rate of change</button>
+  </div>
+
+  <!-- Input bar -->
+  <div class="ai-input-bar">
+    <textarea class="ai-textarea" id="aiTextarea" placeholder="Ask about your sensor data…" rows="1"
+      onkeydown="aiKeyDown(event)" oninput="aiAutoResize(this)"></textarea>
+    <button class="ai-send-btn" id="aiSendBtn" onclick="aiSend()" title="Send">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Drill-down overlay -->
 <div class="drill-ov" id="drillOv">
   <div class="drill-modal">
     <div class="dm-hdr">
@@ -281,7 +446,7 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
   </div>
 </div>
 
-<!-- Firebase module (ES module scope) -->
+<!-- Firebase module -->
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -320,7 +485,6 @@ const COLORS=['#2563eb','#16a34a','#f97316','#dc2626','#7c3aed','#0891b2','#be18
 let colorMap={},colorIdx=0;
 function getColor(k){if(!colorMap[k])colorMap[k]=COLORS[colorIdx++%COLORS.length];return colorMap[k];}
 
-// ── Safe min/max/avg that don't blow the call stack on large arrays ──────────
 function safeMin(arr){let m=Infinity;for(let i=0;i<arr.length;i++)if(arr[i]<m)m=arr[i];return m;}
 function safeMax(arr){let m=-Infinity;for(let i=0;i<arr.length;i++)if(arr[i]>m)m=arr[i];return m;}
 function safeAvg(arr){let s=0;for(let i=0;i<arr.length;i++)s+=arr[i];return s/arr.length;}
@@ -330,8 +494,6 @@ let serialPort=null,serialReader=null,serialRunning=false;
 let fbBuffer={},fbFlushTimer=null,fbPushReady=false;
 let drillKey=null,drillChart=null,drillZoom=50,drillPanOff=0,drillPanned=false;
 let drillLiveMode=false;
-
-// ── Track which keys have had DOM+chart initialized ──────────────────────────
 let initializedKeys=new Set();
 
 // Clock
@@ -399,7 +561,7 @@ async function disconnectSerial(){
   toast('Disconnected','warn');
 }
 
-// ── Data processing ───────────────────────────────────────────────────────────
+// ── Data processing ────────────────────────────────────────────────────────────
 function processData(payload){
   const now=new Date(),ts=now.getTime(),tsStr=now.toISOString().slice(0,19).replace('T',' '),label=now.toLocaleTimeString('en-GB');
   let gotAny=false;
@@ -421,30 +583,21 @@ function processData(payload){
   document.getElementById('emptyState').style.display='none';
   scheduleRender();
   fbPush(tsStr,payload);
-
-  if(drillKey && drillLiveMode){
-    drillPanOff=0;drillPanned=false;refreshDrill();
-  }
+  if(drillKey&&drillLiveMode){drillPanOff=0;drillPanned=false;refreshDrill();}
+  updateAICtxPts();
 }
 
-// ── Use setTimeout instead of rAF — rAF is throttled/paused when tab loses
-// focus, which causes the dashboard to freeze mid-session. setTimeout keeps
-// firing regardless of tab visibility.
 function scheduleRender(){
   if(renderScheduled)return;
   renderScheduled=true;
-  setTimeout(()=>{renderScheduled=false;renderAll();},16); // ~60fps cap
+  setTimeout(()=>{renderScheduled=false;renderAll();},16);
 }
 
-// ── Guaranteed fallback ticker: every 200 ms force a DOM update even if
-// no new serial data arrived (covers rAF stalls and missed schedules).
 setInterval(()=>{
   const keys=Object.keys(sessionData);
   if(!keys.length)return;
-  if(!document.getElementById('sumRow'))return; // not yet built
-  updateSummary(keys);
-  updateCards(keys);
-  checkAlarms(keys);
+  if(!document.getElementById('sumRow'))return;
+  updateSummary(keys);updateCards(keys);checkAlarms(keys);
 },200);
 
 function getSlice(key){
@@ -453,39 +606,29 @@ function getSlice(key){
   return{ts:d.ts.slice(-n),vals:d.vals.slice(-n),labels:d.labels.slice(-n)};
 }
 
-// ── FIX: renderAll now handles both first-run AND new keys arriving later ────
 function renderAll(){
   const keys=Object.keys(sessionData);if(!keys.length)return;
-
-  // ── Ensure top-level containers exist ───────────────────────────────────────
   let ws=document.getElementById('ws');
   let sumRow=document.getElementById('sumRow');
-  let cgrid=document.getElementById('cgrid');
-  let logcard=document.getElementById('logBody');
 
   if(!sumRow){
-    // First render — build the skeleton
     ws.innerHTML='';
     sumRow=document.createElement('div');sumRow.className='sum-row';sumRow.id='sumRow';ws.appendChild(sumRow);
-    cgrid=document.createElement('div');cgrid.className='cgrid';cgrid.id='cgrid';ws.appendChild(cgrid);
+    const cgrid=document.createElement('div');cgrid.className='cgrid';cgrid.id='cgrid';ws.appendChild(cgrid);
     const lc=document.createElement('div');lc.className='logcard';
     lc.innerHTML=`<div class="loghdr"><span class="logtitle">Live Data Log</span><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4)">last 50 records</span></div><div class="logbody" id="logBody"></div>`;
     ws.appendChild(lc);
   }
 
-  // ── FIX: for any key not yet in DOM, build its card+chart now ───────────────
   keys.forEach(k=>{
-    if(initializedKeys.has(k))return; // already built, just update below
+    if(initializedKeys.has(k))return;
     initializedKeys.add(k);
     const color=getColor(k);
-
-    // Summary card
     const sc=document.createElement('div');sc.className='scard';sc.id='scard-'+k;
     sc.style.borderTop='3px solid '+color;sc.onclick=()=>openDrill(k);sc.title='Click to drill down';
     sc.innerHTML=`<div class="scard-lbl">${k.toUpperCase()}</div><div class="scard-val" id="scval-${k}" style="color:${color}">--</div><div class="scard-sub" id="scmeta-${k}">--</div>`;
     document.getElementById('sumRow').appendChild(sc);
 
-    // Channel card
     const cc=document.createElement('div');cc.className='ccard';cc.id='cc-'+k;
     cc.ondblclick=()=>openDrill(k);
     cc.innerHTML=`<span class="drill-hint">dbl-click to drill down</span>
@@ -494,16 +637,11 @@ function renderAll(){
       <div class="cc-chart"><canvas id="cvc-${k}" role="img" aria-label="${k} trend chart"></canvas></div>
       <div class="cc-meta"><span>MIN <b id="cmin-${k}">--</b></span><span>AVG <b id="cavg-${k}">--</b></span><span>MAX <b id="cmax-${k}">--</b></span><span>PTS <b id="cpts-${k}">--</b></span></div></div>`;
     document.getElementById('cgrid').appendChild(cc);
-
-    // Init chart immediately after appending to DOM
     initChart(k);
   });
 
-  updateSummary(keys);
-  updateCards(keys);
-  updateLog();
-  // refresh drawer rows if open
-  if(document.getElementById('almDrawer').classList.contains('open')) renderAlarmDrawer();
+  updateSummary(keys);updateCards(keys);updateLog();
+  if(document.getElementById('almDrawer').classList.contains('open'))renderAlarmDrawer();
 }
 
 function updateSummary(keys){
@@ -530,14 +668,10 @@ function updateCards(keys){
     if(el('cavg-'+k))el('cavg-'+k).textContent=avg.toFixed(2);
     if(el('cmax-'+k))el('cmax-'+k).textContent=max.toFixed(2);
     if(el('cpts-'+k))el('cpts-'+k).textContent=all.length;
-
-    // ── FIX: update chart data arrays in-place, then call update() ──────────
     if(charts[k]){
       const ds=charts[k].data.datasets[0];
-      charts[k].data.labels=labels;
-      ds.data=vals;
-      ds.pointRadius=vals.length>60?0:2;
-      charts[k].update(); // no 'none' — let Chart.js actually redraw
+      charts[k].data.labels=labels;ds.data=vals;ds.pointRadius=vals.length>60?0:2;
+      charts[k].update();
     }
   });
 }
@@ -549,17 +683,8 @@ function initChart(key){
   charts[key]=new Chart(el.getContext('2d'),{
     type:'line',
     data:{labels,datasets:[{data:vals,borderColor:color,backgroundColor:color+'15',borderWidth:1.5,tension:.38,pointRadius:vals.length>60?0:2,fill:true}]},
-    options:{
-      animation:false,          // no entry animation, but update() still redraws
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
-      scales:{
-        x:{display:false},
-        y:{display:true,grid:{color:'#dde4ef',lineWidth:.5},border:{display:false},
-          ticks:{color:'#94a3b8',font:{family:'JetBrains Mono',size:9},maxTicksLimit:3,callback:v=>v.toFixed(1)}}
-      }
-    }
+    options:{animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+      scales:{x:{display:false},y:{display:true,grid:{color:'#dde4ef',lineWidth:.5},border:{display:false},ticks:{color:'#94a3b8',font:{family:'JetBrains Mono',size:9},maxTicksLimit:3,callback:v=>v.toFixed(1)}}}}
   });
 }
 
@@ -574,8 +699,7 @@ function setView(btn,n){document.querySelectorAll('.rbtn').forEach(b=>b.classLis
 
 // ── Drill-down ────────────────────────────────────────────────────────────────
 function openDrill(key){
-  drillKey=key;drillPanOff=0;drillPanned=false;drillZoom=50;
-  drillLiveMode=false;
+  drillKey=key;drillPanOff=0;drillPanned=false;drillZoom=50;drillLiveMode=false;
   updateSnapBtn();
   document.getElementById('dmDot').style.background=getColor(key);
   document.getElementById('dmTitle').textContent=key.replace(/_/g,' ').toUpperCase();
@@ -584,35 +708,23 @@ function openDrill(key){
   document.querySelector('.zbtn').classList.add('on');
   refreshDrill();
 }
-
 function closeDrill(){
   document.getElementById('drillOv').classList.remove('open');
-  drillKey=null;drillLiveMode=false;
-  updateSnapBtn();
+  drillKey=null;drillLiveMode=false;updateSnapBtn();
   if(drillChart){drillChart.destroy();drillChart=null;}
 }
-
-function drillSnapLive(){
-  drillLiveMode=!drillLiveMode;
-  if(drillLiveMode){drillPanOff=0;drillPanned=false;refreshDrill();}
-  updateSnapBtn();
-}
-
+function drillSnapLive(){drillLiveMode=!drillLiveMode;if(drillLiveMode){drillPanOff=0;drillPanned=false;refreshDrill();}updateSnapBtn();}
 function updateSnapBtn(){
   const btn=document.getElementById('snapBtn');if(!btn)return;
   if(drillLiveMode){btn.textContent='⬤ LIVE — click to pause';btn.classList.add('live-on');}
   else{btn.textContent='⬤ Snap to Live';btn.classList.remove('live-on');}
 }
-
 function drillPan(dir){
   if(!sessionData[drillKey])return;
   drillLiveMode=false;updateSnapBtn();
   const step=Math.max(10,Math.floor((drillZoom||sessionData[drillKey].vals.length)*.25));
-  drillPanOff=Math.max(0,drillPanOff+dir*step);
-  drillPanned=drillPanOff>0;
-  refreshDrill();
+  drillPanOff=Math.max(0,drillPanOff+dir*step);drillPanned=drillPanOff>0;refreshDrill();
 }
-
 function getDrillSlice(){
   if(!drillKey)return{vals:[],labels:[]};
   const d=sessionData[drillKey];if(!d||!d.vals.length)return{vals:[],labels:[]};
@@ -621,7 +733,6 @@ function getDrillSlice(){
   const start=total-zoom-off,end=total-off;
   return{vals:d.vals.slice(start,end),labels:d.labels.slice(start,end)};
 }
-
 function refreshDrill(){
   if(!drillKey)return;
   const d=sessionData[drillKey];if(!d||!d.vals.length)return;
@@ -651,13 +762,11 @@ function refreshDrill(){
     refreshDrill();
   };
 }
-
 function drillSetZoom(pts,btn){
   drillZoom=pts;drillPanOff=0;drillPanned=false;
   document.querySelectorAll('.zbtn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');refreshDrill();
 }
-
 document.addEventListener('keydown',e=>{
   if(!drillKey)return;
   if(e.key==='Escape')closeDrill();
@@ -694,229 +803,320 @@ function toast(msg,type='ok'){const el=document.getElementById('toast');el.textC
 // ═══════════════════════════════════════════════════════════════════
 // ALARM SYSTEM
 // ═══════════════════════════════════════════════════════════════════
+let alarms={},alarmStates={},alarmFiringCount=0,lastNotifTime={};
+let _audioCtx=null;
+function getAudioCtx(){if(!_audioCtx)_audioCtx=new(window.AudioContext||window.webkitAudioContext)();return _audioCtx;}
+function playBeep(freq=880,dur=0.12,vol=0.25){
+  try{const ctx=getAudioCtx();const osc=ctx.createOscillator();const gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=freq;osc.type='sine';gain.gain.setValueAtTime(vol,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);osc.start(ctx.currentTime);osc.stop(ctx.currentTime+dur);}catch(e){}
+}
+function playWarnBeep(){playBeep(660,0.10,0.2);}
+function playCritBeep(){playBeep(880,0.08,0.3);setTimeout(()=>playBeep(1100,0.08,0.3),120);}
 
-// alarms[key] = { enabled, warnLow, warnHigh, critLow, critHigh }
-let alarms = {};
-let alarmStates = {};   // alarmStates[key] = 'ok' | 'warn' | 'crit'
-let alarmFiringCount = 0;
-let lastNotifTime = {};  // throttle browser notifications per key
+function openAlarmDrawer(){renderAlarmDrawer();document.getElementById('almDrawer').classList.add('open');}
+function closeAlarmDrawer(){document.getElementById('almDrawer').classList.remove('open');}
 
-// ── AudioContext for in-browser beep ─────────────────────────────
-let _audioCtx = null;
-function getAudioCtx(){
-  if(!_audioCtx) _audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  return _audioCtx;
-}
-function playBeep(freq=880, dur=0.12, vol=0.25){
-  try{
-    const ctx = getAudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = freq;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(vol, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + dur);
-  } catch(e){}
-}
-function playWarnBeep(){ playBeep(660, 0.10, 0.2); }
-function playCritBeep(){
-  playBeep(880, 0.08, 0.3);
-  setTimeout(()=>playBeep(1100, 0.08, 0.3), 120);
-}
-
-// ── Drawer open/close ─────────────────────────────────────────────
-function openAlarmDrawer(){
-  renderAlarmDrawer();
-  document.getElementById('almDrawer').classList.add('open');
-}
-function closeAlarmDrawer(){
-  document.getElementById('almDrawer').classList.remove('open');
-}
-
-// ── Render drawer rows for all known sensors ──────────────────────
 function renderAlarmDrawer(){
-  const keys = Object.keys(sessionData);
-  const scroll = document.getElementById('almScroll');
-  const empty = document.getElementById('almEmpty');
-  if(!keys.length){ empty.style.display=''; return; }
+  const keys=Object.keys(sessionData);
+  const scroll=document.getElementById('almScroll');
+  const empty=document.getElementById('almEmpty');
+  if(!keys.length){empty.style.display='';return;}
   empty.style.display='none';
-
-  // Remove rows for keys no longer present; add rows for new keys
-  keys.forEach(k => {
-    if(document.getElementById('alm-row-'+k)) return; // already rendered
-    const cfg = alarms[k] || {};
-    const color = getColor(k);
-    const state = alarmStates[k] || 'ok';
-    const row = document.createElement('div');
-    row.className = 'alm-row' + (state==='crit'?' active-crit':state==='warn'?' active-warn':'');
-    row.id = 'alm-row-'+k;
-    row.innerHTML = `
-      <div class="alm-row-hdr">
-        <div class="alm-dot" style="background:${color}"></div>
-        <span class="alm-key">${k.replace(/_/g,' ')}</span>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);margin-right:6px;" id="alm-cur-${k}">--</div>
-        <label class="alm-toggle">
-          <input type="checkbox" id="almEn-${k}" ${cfg.enabled?'checked':''}
-            onchange="alarms['${k}']={...alarmCfg('${k}'),enabled:this.checked}">
-          <span class="alm-slider"></span>
-        </label>
-      </div>
-      <div class="alm-fields">
-        <div class="alm-field">
-          <label>WARN LOW</label>
-          <input type="number" id="almWL-${k}" placeholder="—" value="${cfg.warnLow??''}" step="any">
-        </div>
-        <div class="alm-field">
-          <label>WARN HIGH</label>
-          <input type="number" id="almWH-${k}" placeholder="—" value="${cfg.warnHigh??''}" step="any">
-        </div>
-        <div class="alm-field">
-          <label>CRIT LOW</label>
-          <input type="number" id="almCL-${k}" placeholder="—" value="${cfg.critLow??''}" step="any">
-        </div>
-        <div class="alm-field">
-          <label>CRIT HIGH</label>
-          <input type="number" id="almCH-${k}" placeholder="—" value="${cfg.critHigh??''}" step="any">
-        </div>
-      </div>
-      <div class="alm-status ok" id="alm-status-${k}">OK — no alarm</div>
-    `;
+  keys.forEach(k=>{
+    if(document.getElementById('alm-row-'+k))return;
+    const cfg=alarms[k]||{};const color=getColor(k);const state=alarmStates[k]||'ok';
+    const row=document.createElement('div');
+    row.className='alm-row'+(state==='crit'?' active-crit':state==='warn'?' active-warn':'');
+    row.id='alm-row-'+k;
+    row.innerHTML=`<div class="alm-row-hdr"><div class="alm-dot" style="background:${color}"></div><span class="alm-key">${k.replace(/_/g,' ')}</span><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);margin-right:6px;" id="alm-cur-${k}">--</div><label class="alm-toggle"><input type="checkbox" id="almEn-${k}" ${cfg.enabled?'checked':''} onchange="alarms['${k}']={...alarmCfg('${k}'),enabled:this.checked}"><span class="alm-slider"></span></label></div>
+    <div class="alm-fields"><div class="alm-field"><label>WARN LOW</label><input type="number" id="almWL-${k}" placeholder="—" value="${cfg.warnLow??''}" step="any"></div><div class="alm-field"><label>WARN HIGH</label><input type="number" id="almWH-${k}" placeholder="—" value="${cfg.warnHigh??''}" step="any"></div><div class="alm-field"><label>CRIT LOW</label><input type="number" id="almCL-${k}" placeholder="—" value="${cfg.critLow??''}" step="any"></div><div class="alm-field"><label>CRIT HIGH</label><input type="number" id="almCH-${k}" placeholder="—" value="${cfg.critHigh??''}" step="any"></div></div>
+    <div class="alm-status ok" id="alm-status-${k}">OK — no alarm</div>`;
     scroll.appendChild(row);
   });
-
-  // Update live current values in drawer
-  keys.forEach(k => {
-    const d = sessionData[k];
-    if(!d||!d.vals.length) return;
-    const el = document.getElementById('alm-cur-'+k);
-    if(el) el.textContent = d.vals[d.vals.length-1].toFixed(2);
-  });
+  keys.forEach(k=>{const d=sessionData[k];if(!d||!d.vals.length)return;const el=document.getElementById('alm-cur-'+k);if(el)el.textContent=d.vals[d.vals.length-1].toFixed(2);});
 }
 
-// ── Read current field values for a key ──────────────────────────
 function alarmCfg(k){
-  const pf = id => { const el=document.getElementById(id); return el&&el.value!==''?parseFloat(el.value):null; };
-  return {
-    enabled: document.getElementById('almEn-'+k)?.checked ?? false,
-    warnLow:  pf('almWL-'+k),
-    warnHigh: pf('almWH-'+k),
-    critLow:  pf('almCL-'+k),
-    critHigh: pf('almCH-'+k),
-  };
+  const pf=id=>{const el=document.getElementById(id);return el&&el.value!==''?parseFloat(el.value):null;};
+  return{enabled:document.getElementById('almEn-'+k)?.checked??false,warnLow:pf('almWL-'+k),warnHigh:pf('almWH-'+k),critLow:pf('almCL-'+k),critHigh:pf('almCH-'+k)};
 }
-
-// ── Save button: read all fields into alarms{} ────────────────────
 function saveAlarms(){
-  Object.keys(sessionData).forEach(k => { alarms[k] = alarmCfg(k); });
-  try{ localStorage.setItem('rs_alarms', JSON.stringify(alarms)); } catch(e){}
-  toast('Alarm config saved', 'ok');
-  closeAlarmDrawer();
+  Object.keys(sessionData).forEach(k=>{alarms[k]=alarmCfg(k);});
+  try{localStorage.setItem('rs_alarms',JSON.stringify(alarms));}catch(e){}
+  toast('Alarm config saved','ok');closeAlarmDrawer();
+}
+(function loadAlarms(){try{const saved=JSON.parse(localStorage.getItem('rs_alarms')||'null');if(saved)alarms=saved;}catch(e){}})();
+
+function checkAlarms(keys){
+  let firingCount=0;
+  keys.forEach(k=>{
+    const cfg=alarms[k];const d=sessionData[k];
+    if(!cfg||!cfg.enabled||!d||!d.vals.length){clearAlarmVisual(k);return;}
+    const v=d.vals[d.vals.length-1];
+    let level='ok';
+    if((cfg.critLow!==null&&v<cfg.critLow)||(cfg.critHigh!==null&&v>cfg.critHigh))level='crit';
+    else if((cfg.warnLow!==null&&v<cfg.warnLow)||(cfg.warnHigh!==null&&v>cfg.warnHigh))level='warn';
+    const prev=alarmStates[k];alarmStates[k]=level;
+    if(level!=='ok')firingCount++;
+    applyAlarmVisual(k,level);
+    const row=document.getElementById('alm-row-'+k);const statusEl=document.getElementById('alm-status-'+k);const curEl=document.getElementById('alm-cur-'+k);
+    if(curEl)curEl.textContent=v.toFixed(2);
+    if(row)row.className='alm-row'+(level==='crit'?' active-crit':level==='warn'?' active-warn':'');
+    if(statusEl){statusEl.className='alm-status '+level;if(level==='ok')statusEl.textContent='OK — within range';else if(level==='warn')statusEl.textContent='⚠ WARN — value '+v.toFixed(3);else statusEl.textContent='🔴 CRIT — value '+v.toFixed(3);}
+    if(level!=='ok'&&prev!==level){
+      const wantSound=document.getElementById('almOptSound')?.checked;
+      const wantNotif=document.getElementById('almOptNotif')?.checked;
+      if(wantSound){level==='crit'?playCritBeep():playWarnBeep();}
+      if(wantNotif){const now=Date.now();if(!lastNotifTime[k]||now-lastNotifTime[k]>5000){lastNotifTime[k]=now;sendBrowserNotif(k,level,v);}}
+    }
+  });
+  alarmFiringCount=firingCount;
+  const badge=document.getElementById('almBadge');
+  if(badge){badge.style.display=firingCount>0?'':'none';badge.textContent=firingCount;}
+}
+function applyAlarmVisual(k,level){
+  const cc=document.getElementById('cc-'+k);const sc=document.getElementById('scard-'+k);const badge=document.getElementById('badge-'+k);
+  if(cc){cc.classList.toggle('alm-firing',level==='crit');cc.classList.toggle('alm-warn',level==='warn');}
+  if(sc){sc.classList.toggle('alm-firing',level==='crit');sc.classList.toggle('alm-warn',level==='warn');}
+  if(badge){badge.className='badge '+(level==='ok'?'ok':level==='warn'?'warn':'crit');badge.textContent=level.toUpperCase();}
+}
+function clearAlarmVisual(k){
+  const cc=document.getElementById('cc-'+k);const sc=document.getElementById('scard-'+k);
+  if(cc){cc.classList.remove('alm-firing','alm-warn');}
+  if(sc){sc.classList.remove('alm-firing','alm-warn');}
+}
+async function sendBrowserNotif(key,level,value){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='default')await Notification.requestPermission();
+  if(Notification.permission==='granted')new Notification('ReflexSense Alarm',{body:`${key.toUpperCase()}: ${level.toUpperCase()} — value ${value.toFixed(3)}`,icon:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><circle cx=%2212%22 cy=%2212%22 r=%2212%22 fill=%22%23dc2626%22/></svg>'});
 }
 
-// ── Load persisted alarms on startup ─────────────────────────────
-(function loadAlarms(){
+// ═══════════════════════════════════════════════════════════════════
+// AI ANALYSIS SYSTEM — OpenAI GPT-4o
+// ═══════════════════════════════════════════════════════════════════
+let aiMessages = [];       // { role, content, ts }
+let aiStreaming = false;
+let aiCtxPoints = 50;      // how many data points to include
+let aiKey = '';
+
+// Load saved key on start
+(function loadAIKey(){
   try{
-    const saved = JSON.parse(localStorage.getItem('rs_alarms')||'null');
-    if(saved) alarms = saved;
-  } catch(e){}
+    const k = localStorage.getItem('rs_oai_key');
+    if(k){ aiKey = k; document.getElementById('aiKeyInput').value = k; updateAIKeyStatus(); }
+  }catch(e){}
 })();
 
-// ── Core check: called every update cycle ─────────────────────────
-function checkAlarms(keys){
-  let firingCount = 0;
+function openAIDrawer(){
+  document.getElementById('aiDrawer').classList.add('open');
+  updateAICtxPts();
+}
+function closeAIDrawer(){
+  document.getElementById('aiDrawer').classList.remove('open');
+}
+
+function aiKeyChanged(){
+  // just visual feedback while typing
+  document.getElementById('aiKeyStatus').className = 'ai-key-status';
+}
+
+function saveAIKey(){
+  const val = document.getElementById('aiKeyInput').value.trim();
+  if(!val.startsWith('sk-')){ toast('Invalid key — must start with sk-','err'); return; }
+  aiKey = val;
+  try{ localStorage.setItem('rs_oai_key', val); }catch(e){}
+  updateAIKeyStatus();
+  toast('OpenAI key saved','ok');
+}
+
+function updateAIKeyStatus(){
+  const st = document.getElementById('aiKeyStatus');
+  if(aiKey && aiKey.startsWith('sk-')){ st.className='ai-key-status set'; }
+  else{ st.className='ai-key-status'; }
+}
+
+function setCtx(pts, btn){
+  aiCtxPoints = pts;
+  document.querySelectorAll('.ai-ctx-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  updateAICtxPts();
+}
+
+function updateAICtxPts(){
+  const keys = Object.keys(sessionData);
+  if(!keys.length){ document.getElementById('aiCtxPts').textContent=''; return; }
+  const n = aiCtxPoints===0 ? Math.max(...keys.map(k=>sessionData[k].vals.length)) : aiCtxPoints;
+  const actual = Math.min(n, Math.max(...keys.map(k=>sessionData[k].vals.length)));
+  document.getElementById('aiCtxPts').textContent = `~${actual} pts/sensor · ${keys.length} sensors`;
+}
+
+// Build a compact JSON summary of current sensor data to pass as context
+function buildDataContext(){
+  const keys = Object.keys(sessionData);
+  if(!keys.length) return 'No sensor data collected yet.';
+  const n = aiCtxPoints === 0 ? Infinity : aiCtxPoints;
+  const summary = {};
   keys.forEach(k => {
-    const cfg = alarms[k];
     const d = sessionData[k];
-    if(!cfg || !cfg.enabled || !d || !d.vals.length){ clearAlarmVisual(k); return; }
-    const v = d.vals[d.vals.length-1];
-    let level = 'ok';
-    if((cfg.critLow  !== null && v <  cfg.critLow) ||
-       (cfg.critHigh !== null && v >  cfg.critHigh)) level = 'crit';
-    else if((cfg.warnLow  !== null && v <  cfg.warnLow) ||
-            (cfg.warnHigh !== null && v >  cfg.warnHigh)) level = 'warn';
-
-    const prev = alarmStates[k];
-    alarmStates[k] = level;
-
-    if(level !== 'ok') firingCount++;
-
-    // Visual on cards
-    applyAlarmVisual(k, level);
-
-    // Update drawer row + status text if drawer is open
-    const row = document.getElementById('alm-row-'+k);
-    const statusEl = document.getElementById('alm-status-'+k);
-    const curEl = document.getElementById('alm-cur-'+k);
-    if(curEl) curEl.textContent = v.toFixed(2);
-    if(row){
-      row.className = 'alm-row' + (level==='crit'?' active-crit':level==='warn'?' active-warn':'');
-    }
-    if(statusEl){
-      statusEl.className = 'alm-status '+level;
-      if(level==='ok') statusEl.textContent = 'OK — within range';
-      else if(level==='warn') statusEl.textContent = '⚠ WARN — value '+v.toFixed(3);
-      else statusEl.textContent = '🔴 CRIT — value '+v.toFixed(3);
-    }
-
-    // Sound + notifications only on transition into alarm state
-    if(level !== 'ok' && prev !== level){
-      const wantSound = document.getElementById('almOptSound')?.checked;
-      const wantNotif = document.getElementById('almOptNotif')?.checked;
-      if(wantSound){
-        level==='crit' ? playCritBeep() : playWarnBeep();
-      }
-      if(wantNotif){
-        const now = Date.now();
-        if(!lastNotifTime[k] || now - lastNotifTime[k] > 5000){
-          lastNotifTime[k] = now;
-          sendBrowserNotif(k, level, v);
-        }
-      }
-    }
+    const slice = d.vals.slice(-n);
+    const min = safeMin(slice), max = safeMax(slice), avg = safeAvg(slice);
+    const latest = slice[slice.length-1];
+    // Include last 20 values for trend visibility (keep payload manageable)
+    const recent = d.vals.slice(-20);
+    summary[k] = { latest: +latest.toFixed(4), min: +min.toFixed(4), max: +max.toFixed(4), avg: +avg.toFixed(4), pts: slice.length, recent_20: recent.map(v=>+v.toFixed(3)) };
   });
-
-  // Header badge
-  alarmFiringCount = firingCount;
-  const badge = document.getElementById('almBadge');
-  if(badge){
-    badge.style.display = firingCount > 0 ? '' : 'none';
-    badge.textContent = firingCount;
-  }
+  const alarmCtx = {};
+  Object.keys(alarms).forEach(k => {
+    if(alarms[k] && alarms[k].enabled) alarmCtx[k] = { ...alarms[k], current_state: alarmStates[k]||'ok' };
+  });
+  return JSON.stringify({ sensors: summary, alarms: alarmCtx, total_records: totalRecs }, null, 2);
 }
 
-function applyAlarmVisual(k, level){
-  const cc = document.getElementById('cc-'+k);
-  const sc = document.getElementById('scard-'+k);
-  const badge = document.getElementById('badge-'+k);
-  if(cc){ cc.classList.toggle('alm-firing', level==='crit'); cc.classList.toggle('alm-warn', level==='warn'); }
-  if(sc){ sc.classList.toggle('alm-firing', level==='crit'); sc.classList.toggle('alm-warn', level==='warn'); }
-  if(badge){ badge.className='badge '+(level==='ok'?'ok':level==='warn'?'warn':'crit'); badge.textContent=level.toUpperCase(); }
+// System prompt for the AI
+function buildSystemPrompt(){
+  return `You are an embedded systems and sensor data analyst assistant integrated into ReflexSense NerveDash — a real-time serial sensor monitoring dashboard.
+
+You have access to live sensor data from a microcontroller connected via Web Serial. The user may ask you to analyze, interpret, detect anomalies, correlate sensors, or give recommendations.
+
+Always be concise and technical. Format numbers clearly. If data is limited, say so. When you detect anomalies or risks, be specific about which sensor and value. You can suggest alarm threshold values. Keep responses focused and under 300 words unless detail is explicitly requested.`;
 }
 
-function clearAlarmVisual(k){
-  const cc = document.getElementById('cc-'+k);
-  const sc = document.getElementById('scard-'+k);
-  if(cc){ cc.classList.remove('alm-firing','alm-warn'); }
-  if(sc){ sc.classList.remove('alm-firing','alm-warn'); }
-}
+async function aiSend(customMsg){
+  const textarea = document.getElementById('aiTextarea');
+  const userMsg = customMsg || textarea.value.trim();
+  if(!userMsg) return;
+  if(!aiKey || !aiKey.startsWith('sk-')){ toast('Enter your OpenAI API key first','err'); return; }
+  if(aiStreaming) return;
 
-// ── Browser notification ──────────────────────────────────────────
-async function sendBrowserNotif(key, level, value){
-  if(!('Notification' in window)) return;
-  if(Notification.permission === 'default'){
-    await Notification.requestPermission();
-  }
-  if(Notification.permission === 'granted'){
-    new Notification('ReflexSense Alarm', {
-      body: `${key.toUpperCase()}: ${level.toUpperCase()} — value ${value.toFixed(3)}`,
-      icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><circle cx=%2212%22 cy=%2212%22 r=%2212%22 fill=%22%23dc2626%22/></svg>'
+  // Clear input
+  if(!customMsg){ textarea.value=''; aiAutoResize(textarea); }
+
+  // Hide empty state
+  document.getElementById('aiEmpty').style.display='none';
+
+  // Add user message
+  const userTs = new Date().toLocaleTimeString('en-GB');
+  aiMessages.push({ role:'user', content: userMsg });
+  renderAIMessage({ role:'user', content: userMsg, ts: userTs });
+
+  // Add loading bubble
+  const loadingId = 'ai-loading-'+Date.now();
+  appendLoadingBubble(loadingId);
+  aiStreaming = true;
+  document.getElementById('aiSendBtn').disabled = true;
+
+  // Build messages array for API (include data context as system message)
+  const dataCtx = buildDataContext();
+  const apiMessages = [
+    { role: 'system', content: buildSystemPrompt() + '\n\nCURRENT SENSOR DATA SNAPSHOT:\n```json\n' + dataCtx + '\n```' },
+    ...aiMessages.map(m => ({ role: m.role, content: m.content }))
+  ];
+
+  try{
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + aiKey
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: apiMessages,
+        max_tokens: 600,
+        temperature: 0.3,
+        stream: false
+      })
     });
+
+    if(!resp.ok){
+      const errData = await resp.json().catch(()=>({}));
+      const errMsg = errData?.error?.message || 'HTTP '+resp.status;
+      removeLoadingBubble(loadingId);
+      appendErrorBubble('API error: ' + errMsg);
+      if(resp.status === 401){ toast('Invalid OpenAI API key','err'); }
+      else{ toast('OpenAI error: '+errMsg,'err'); }
+    } else {
+      const data = await resp.json();
+      const assistantContent = data.choices?.[0]?.message?.content || '(no response)';
+      aiMessages.push({ role:'assistant', content: assistantContent });
+      removeLoadingBubble(loadingId);
+      renderAIMessage({ role:'assistant', content: assistantContent, ts: new Date().toLocaleTimeString('en-GB') });
+    }
+  } catch(e){
+    removeLoadingBubble(loadingId);
+    appendErrorBubble('Network error: ' + e.message);
+    toast('AI request failed','err');
   }
+
+  aiStreaming = false;
+  document.getElementById('aiSendBtn').disabled = false;
+  scrollAIToBottom();
 }
 
+function aiQuickSend(msg){
+  const textarea = document.getElementById('aiTextarea');
+  textarea.value = msg;
+  aiSend();
+}
+
+function renderAIMessage({ role, content, ts }){
+  const msgs = document.getElementById('aiMessages');
+  const wrap = document.createElement('div');
+  wrap.className = 'ai-msg ' + role;
+  const bubble = document.createElement('div');
+  bubble.className = 'ai-bubble';
+  bubble.textContent = content;
+  const meta = document.createElement('div');
+  meta.className = 'ai-meta';
+  meta.textContent = (role==='user' ? 'You' : 'GPT-4o') + ' · ' + ts;
+  wrap.appendChild(bubble);
+  wrap.appendChild(meta);
+  msgs.appendChild(wrap);
+  scrollAIToBottom();
+}
+
+function appendLoadingBubble(id){
+  const msgs = document.getElementById('aiMessages');
+  const wrap = document.createElement('div');
+  wrap.className = 'ai-msg assistant';
+  wrap.id = id;
+  const bubble = document.createElement('div');
+  bubble.className = 'ai-bubble loading';
+  bubble.innerHTML = '<div class="ai-typing"><span></span><span></span><span></span></div>';
+  wrap.appendChild(bubble);
+  msgs.appendChild(wrap);
+  scrollAIToBottom();
+}
+
+function removeLoadingBubble(id){
+  const el = document.getElementById(id);
+  if(el) el.remove();
+}
+
+function appendErrorBubble(msg){
+  const msgs = document.getElementById('aiMessages');
+  const wrap = document.createElement('div');
+  wrap.className = 'ai-msg assistant';
+  const bubble = document.createElement('div');
+  bubble.className = 'ai-bubble';
+  bubble.style.cssText = 'border-color:var(--red);color:var(--red);background:rgba(220,38,38,.04)';
+  bubble.textContent = '⚠ ' + msg;
+  wrap.appendChild(bubble);
+  msgs.appendChild(wrap);
+}
+
+function scrollAIToBottom(){
+  const msgs = document.getElementById('aiMessages');
+  setTimeout(()=>{ msgs.scrollTop = msgs.scrollHeight; }, 50);
+}
+
+function aiKeyDown(e){
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); aiSend(); }
+}
+
+function aiAutoResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,100)+'px';
+}
 </script>
 </body>
 </html>
