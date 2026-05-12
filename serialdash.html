@@ -358,7 +358,24 @@ function processData(payload){
   }
 }
 
-function scheduleRender(){if(renderScheduled)return;renderScheduled=true;requestAnimationFrame(()=>{renderScheduled=false;renderAll();});}
+// ── Use setTimeout instead of rAF — rAF is throttled/paused when tab loses
+// focus, which causes the dashboard to freeze mid-session. setTimeout keeps
+// firing regardless of tab visibility.
+function scheduleRender(){
+  if(renderScheduled)return;
+  renderScheduled=true;
+  setTimeout(()=>{renderScheduled=false;renderAll();},16); // ~60fps cap
+}
+
+// ── Guaranteed fallback ticker: every 200 ms force a DOM update even if
+// no new serial data arrived (covers rAF stalls and missed schedules).
+setInterval(()=>{
+  const keys=Object.keys(sessionData);
+  if(!keys.length)return;
+  if(!document.getElementById('sumRow'))return; // not yet built
+  updateSummary(keys);
+  updateCards(keys);
+},200);
 
 function getSlice(key){
   const d=sessionData[key];if(!d||!d.vals.length)return{ts:[],vals:[],labels:[]};
