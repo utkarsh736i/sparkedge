@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SparkEdge-Serial</title>
+<title>ReflexSense — NerveDash</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -131,13 +131,57 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
 .snap-btn{padding:4px 14px;border-radius:16px;border:1px solid rgba(37,99,235,.4);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--blue);background:rgba(37,99,235,.05);cursor:pointer;transition:all .15s;}
 .snap-btn:hover{background:rgba(37,99,235,.12);}
 .snap-btn.live-on{background:rgba(22,163,74,.12)!important;border-color:var(--green)!important;color:var(--green)!important;}
+/* ── Alarm drawer ─────────────────────────────────────────────────────────── */
+.alm-drawer{position:fixed;top:0;right:0;width:360px;height:100vh;background:white;border-left:1px solid var(--bdr2);box-shadow:-4px 0 24px rgba(0,0,0,.10);z-index:900;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);}
+.alm-drawer.open{transform:translateX(0);}
+.alm-drawer-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:white;}
+.alm-drawer-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:1px;color:var(--t1);}
+.alm-close{margin-left:auto;padding:4px 12px;border-radius:6px;border:1px solid var(--bdr2);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--t3);background:transparent;cursor:pointer;transition:all .15s;}
+.alm-close:hover{border-color:var(--red);color:var(--red);}
+.alm-scroll{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:14px;}
+.alm-scroll::-webkit-scrollbar{width:3px;}
+.alm-scroll::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px;}
+.alm-empty{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t4);text-align:center;padding:32px 0;line-height:1.8;}
+.alm-row{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
+.alm-row.active-warn{border-color:var(--orange);background:rgba(249,115,22,.04);}
+.alm-row.active-crit{border-color:var(--red);background:rgba(220,38,38,.04);animation:cp 2s infinite;}
+.alm-row-hdr{display:flex;align-items:center;gap:8px;}
+.alm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.alm-key{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--t1);flex:1;text-transform:uppercase;letter-spacing:.5px;}
+.alm-toggle{position:relative;width:34px;height:18px;flex-shrink:0;}
+.alm-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.alm-slider{position:absolute;inset:0;background:var(--bdr2);border-radius:18px;cursor:pointer;transition:background .2s;}
+.alm-slider::before{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:white;left:3px;top:3px;transition:transform .2s;}
+.alm-toggle input:checked+.alm-slider{background:var(--blue);}
+.alm-toggle input:checked+.alm-slider::before{transform:translateX(16px);}
+.alm-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.alm-field{display:flex;flex-direction:column;gap:3px;}
+.alm-field label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);letter-spacing:.5px;text-transform:uppercase;}
+.alm-field input{background:white;border:1px solid var(--bdr2);border-radius:6px;padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t1);outline:none;transition:border-color .15s;width:100%;}
+.alm-field input:focus{border-color:var(--blue);}
+.alm-status{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;text-align:center;font-weight:700;}
+.alm-status.ok{background:rgba(22,163,74,.08);color:var(--green);border:1px solid rgba(22,163,74,.25);}
+.alm-status.warn{background:rgba(249,115,22,.08);color:var(--orange);border:1px solid rgba(249,115,22,.25);}
+.alm-status.crit{background:rgba(220,38,38,.08);color:var(--red);border:1px solid rgba(220,38,38,.25);}
+.alm-footer{flex-shrink:0;padding:12px 18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;background:white;}
+.alm-notif-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);}
+.alm-notif-row label{display:flex;align-items:center;gap:6px;cursor:pointer;}
+.alm-notif-row input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px;}
+.alm-save-btn{width:100%;padding:8px;border-radius:8px;border:none;background:var(--blue);color:white;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:background .15s;}
+.alm-save-btn:hover{background:#1d4ed8;}
+.alm-hbtn-wrap{position:relative;display:inline-flex;}
+.alm-badge-ct{position:absolute;top:-5px;right:-5px;background:var(--red);color:white;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;padding:1px 5px;display:none;min-width:16px;text-align:center;}
+.ccard.alm-firing{border-left:3px solid var(--red)!important;animation:cp 1.5s infinite!important;}
+.ccard.alm-warn{border-left:3px solid var(--orange)!important;}
+.scard.alm-firing{border-top-color:var(--red)!important;animation:cp 1.5s infinite!important;}
+.scard.alm-warn{border-top-color:var(--orange)!important;}
 </style>
 </head>
 <body>
 <header class="hdr">
   <a class="brand" href="#">
     <div class="brand-mark"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="9" x2="12" y2="3"/><line x1="14.6" y1="9.7" x2="19" y2="6"/><line x1="14.6" y1="14.3" x2="19" y2="18"/><line x1="12" y1="15" x2="12" y2="21"/><line x1="9.4" y1="14.3" x2="5" y2="18"/><line x1="9.4" y1="9.7" x2="5" y2="6"/></svg></div>
-    <div><div class="brand-name">Spark<em>Edge</em></div><div class="brand-sub">SERIAL · NERVEDASH</div></div>
+    <div><div class="brand-name">Reflex<em>Sense</em></div><div class="brand-sub">SERIAL · NERVEDASH</div></div>
   </a>
   <div class="sep"></div>
   <div class="spill" id="connPill"><div class="pdot"></div><span id="connTxt">No device</span></div>
@@ -180,6 +224,27 @@ body{background:var(--bg);color:var(--t1);font-family:'Open Sans',sans-serif;dis
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<!-- ── Alarm Settings Drawer ───────────────────────────────────────────────── -->
+<div class="alm-drawer" id="almDrawer">
+  <div class="alm-drawer-hdr">
+    <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--blue);fill:none;stroke-width:2;flex-shrink:0"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span class="alm-drawer-title">ALARM CONFIG</span>
+    <button class="alm-close" onclick="closeAlarmDrawer()">✕ Close</button>
+  </div>
+  <div class="alm-scroll" id="almScroll">
+    <div class="alm-empty" id="almEmpty">Connect a device to configure<br>per-sensor threshold alarms.</div>
+  </div>
+  <div class="alm-footer">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);letter-spacing:.5px;margin-bottom:2px;">NOTIFY VIA</div>
+    <div class="alm-notif-row">
+      <label><input type="checkbox" id="almOptVisual" checked disabled> Visual</label>
+      <label><input type="checkbox" id="almOptSound" checked> Sound</label>
+      <label><input type="checkbox" id="almOptNotif"> Browser notification</label>
+    </div>
+    <button class="alm-save-btn" onclick="saveAlarms()">SAVE ALARMS</button>
+  </div>
+</div>
+
 <div class="drill-ov" id="drillOv">
   <div class="drill-modal">
     <div class="dm-hdr">
@@ -375,6 +440,7 @@ setInterval(()=>{
   if(!document.getElementById('sumRow'))return; // not yet built
   updateSummary(keys);
   updateCards(keys);
+  checkAlarms(keys);
 },200);
 
 function getSlice(key){
@@ -432,6 +498,8 @@ function renderAll(){
   updateSummary(keys);
   updateCards(keys);
   updateLog();
+  // refresh drawer rows if open
+  if(document.getElementById('almDrawer').classList.contains('open')) renderAlarmDrawer();
 }
 
 function updateSummary(keys){
@@ -618,6 +686,233 @@ function exportCSV(){
 function setConnPill(state,text){document.getElementById('connPill').className='spill'+(state?' '+state:'');document.getElementById('connTxt').textContent=text;}
 function setModePill(mode,text){document.getElementById('modePill').className='spill'+(mode==='live'?' live':'');document.getElementById('liveDot').style.display=mode==='live'?'':'none';document.getElementById('modeTxt').textContent=text;}
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+type;clearTimeout(toastTmr);toastTmr=setTimeout(()=>el.className='toast',3500);}
+
+// ═══════════════════════════════════════════════════════════════════
+// ALARM SYSTEM
+// ═══════════════════════════════════════════════════════════════════
+
+// alarms[key] = { enabled, warnLow, warnHigh, critLow, critHigh }
+let alarms = {};
+let alarmStates = {};   // alarmStates[key] = 'ok' | 'warn' | 'crit'
+let alarmFiringCount = 0;
+let lastNotifTime = {};  // throttle browser notifications per key
+
+// ── AudioContext for in-browser beep ─────────────────────────────
+let _audioCtx = null;
+function getAudioCtx(){
+  if(!_audioCtx) _audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  return _audioCtx;
+}
+function playBeep(freq=880, dur=0.12, vol=0.25){
+  try{
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur);
+  } catch(e){}
+}
+function playWarnBeep(){ playBeep(660, 0.10, 0.2); }
+function playCritBeep(){
+  playBeep(880, 0.08, 0.3);
+  setTimeout(()=>playBeep(1100, 0.08, 0.3), 120);
+}
+
+// ── Drawer open/close ─────────────────────────────────────────────
+function openAlarmDrawer(){
+  renderAlarmDrawer();
+  document.getElementById('almDrawer').classList.add('open');
+}
+function closeAlarmDrawer(){
+  document.getElementById('almDrawer').classList.remove('open');
+}
+
+// ── Render drawer rows for all known sensors ──────────────────────
+function renderAlarmDrawer(){
+  const keys = Object.keys(sessionData);
+  const scroll = document.getElementById('almScroll');
+  const empty = document.getElementById('almEmpty');
+  if(!keys.length){ empty.style.display=''; return; }
+  empty.style.display='none';
+
+  // Remove rows for keys no longer present; add rows for new keys
+  keys.forEach(k => {
+    if(document.getElementById('alm-row-'+k)) return; // already rendered
+    const cfg = alarms[k] || {};
+    const color = getColor(k);
+    const state = alarmStates[k] || 'ok';
+    const row = document.createElement('div');
+    row.className = 'alm-row' + (state==='crit'?' active-crit':state==='warn'?' active-warn':'');
+    row.id = 'alm-row-'+k;
+    row.innerHTML = `
+      <div class="alm-row-hdr">
+        <div class="alm-dot" style="background:${color}"></div>
+        <span class="alm-key">${k.replace(/_/g,' ')}</span>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);margin-right:6px;" id="alm-cur-${k}">--</div>
+        <label class="alm-toggle">
+          <input type="checkbox" id="almEn-${k}" ${cfg.enabled?'checked':''}
+            onchange="alarms['${k}']={...alarmCfg('${k}'),enabled:this.checked}">
+          <span class="alm-slider"></span>
+        </label>
+      </div>
+      <div class="alm-fields">
+        <div class="alm-field">
+          <label>WARN LOW</label>
+          <input type="number" id="almWL-${k}" placeholder="—" value="${cfg.warnLow??''}" step="any">
+        </div>
+        <div class="alm-field">
+          <label>WARN HIGH</label>
+          <input type="number" id="almWH-${k}" placeholder="—" value="${cfg.warnHigh??''}" step="any">
+        </div>
+        <div class="alm-field">
+          <label>CRIT LOW</label>
+          <input type="number" id="almCL-${k}" placeholder="—" value="${cfg.critLow??''}" step="any">
+        </div>
+        <div class="alm-field">
+          <label>CRIT HIGH</label>
+          <input type="number" id="almCH-${k}" placeholder="—" value="${cfg.critHigh??''}" step="any">
+        </div>
+      </div>
+      <div class="alm-status ok" id="alm-status-${k}">OK — no alarm</div>
+    `;
+    scroll.appendChild(row);
+  });
+
+  // Update live current values in drawer
+  keys.forEach(k => {
+    const d = sessionData[k];
+    if(!d||!d.vals.length) return;
+    const el = document.getElementById('alm-cur-'+k);
+    if(el) el.textContent = d.vals[d.vals.length-1].toFixed(2);
+  });
+}
+
+// ── Read current field values for a key ──────────────────────────
+function alarmCfg(k){
+  const pf = id => { const el=document.getElementById(id); return el&&el.value!==''?parseFloat(el.value):null; };
+  return {
+    enabled: document.getElementById('almEn-'+k)?.checked ?? false,
+    warnLow:  pf('almWL-'+k),
+    warnHigh: pf('almWH-'+k),
+    critLow:  pf('almCL-'+k),
+    critHigh: pf('almCH-'+k),
+  };
+}
+
+// ── Save button: read all fields into alarms{} ────────────────────
+function saveAlarms(){
+  Object.keys(sessionData).forEach(k => { alarms[k] = alarmCfg(k); });
+  try{ localStorage.setItem('rs_alarms', JSON.stringify(alarms)); } catch(e){}
+  toast('Alarm config saved', 'ok');
+  closeAlarmDrawer();
+}
+
+// ── Load persisted alarms on startup ─────────────────────────────
+(function loadAlarms(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('rs_alarms')||'null');
+    if(saved) alarms = saved;
+  } catch(e){}
+})();
+
+// ── Core check: called every update cycle ─────────────────────────
+function checkAlarms(keys){
+  let firingCount = 0;
+  keys.forEach(k => {
+    const cfg = alarms[k];
+    const d = sessionData[k];
+    if(!cfg || !cfg.enabled || !d || !d.vals.length){ clearAlarmVisual(k); return; }
+    const v = d.vals[d.vals.length-1];
+    let level = 'ok';
+    if((cfg.critLow  !== null && v <  cfg.critLow) ||
+       (cfg.critHigh !== null && v >  cfg.critHigh)) level = 'crit';
+    else if((cfg.warnLow  !== null && v <  cfg.warnLow) ||
+            (cfg.warnHigh !== null && v >  cfg.warnHigh)) level = 'warn';
+
+    const prev = alarmStates[k];
+    alarmStates[k] = level;
+
+    if(level !== 'ok') firingCount++;
+
+    // Visual on cards
+    applyAlarmVisual(k, level);
+
+    // Update drawer row + status text if drawer is open
+    const row = document.getElementById('alm-row-'+k);
+    const statusEl = document.getElementById('alm-status-'+k);
+    const curEl = document.getElementById('alm-cur-'+k);
+    if(curEl) curEl.textContent = v.toFixed(2);
+    if(row){
+      row.className = 'alm-row' + (level==='crit'?' active-crit':level==='warn'?' active-warn':'');
+    }
+    if(statusEl){
+      statusEl.className = 'alm-status '+level;
+      if(level==='ok') statusEl.textContent = 'OK — within range';
+      else if(level==='warn') statusEl.textContent = '⚠ WARN — value '+v.toFixed(3);
+      else statusEl.textContent = '🔴 CRIT — value '+v.toFixed(3);
+    }
+
+    // Sound + notifications only on transition into alarm state
+    if(level !== 'ok' && prev !== level){
+      const wantSound = document.getElementById('almOptSound')?.checked;
+      const wantNotif = document.getElementById('almOptNotif')?.checked;
+      if(wantSound){
+        level==='crit' ? playCritBeep() : playWarnBeep();
+      }
+      if(wantNotif){
+        const now = Date.now();
+        if(!lastNotifTime[k] || now - lastNotifTime[k] > 5000){
+          lastNotifTime[k] = now;
+          sendBrowserNotif(k, level, v);
+        }
+      }
+    }
+  });
+
+  // Header badge
+  alarmFiringCount = firingCount;
+  const badge = document.getElementById('almBadge');
+  if(badge){
+    badge.style.display = firingCount > 0 ? '' : 'none';
+    badge.textContent = firingCount;
+  }
+}
+
+function applyAlarmVisual(k, level){
+  const cc = document.getElementById('cc-'+k);
+  const sc = document.getElementById('scard-'+k);
+  const badge = document.getElementById('badge-'+k);
+  if(cc){ cc.classList.toggle('alm-firing', level==='crit'); cc.classList.toggle('alm-warn', level==='warn'); }
+  if(sc){ sc.classList.toggle('alm-firing', level==='crit'); sc.classList.toggle('alm-warn', level==='warn'); }
+  if(badge){ badge.className='badge '+(level==='ok'?'ok':level==='warn'?'warn':'crit'); badge.textContent=level.toUpperCase(); }
+}
+
+function clearAlarmVisual(k){
+  const cc = document.getElementById('cc-'+k);
+  const sc = document.getElementById('scard-'+k);
+  if(cc){ cc.classList.remove('alm-firing','alm-warn'); }
+  if(sc){ sc.classList.remove('alm-firing','alm-warn'); }
+}
+
+// ── Browser notification ──────────────────────────────────────────
+async function sendBrowserNotif(key, level, value){
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'default'){
+    await Notification.requestPermission();
+  }
+  if(Notification.permission === 'granted'){
+    new Notification('ReflexSense Alarm', {
+      body: `${key.toUpperCase()}: ${level.toUpperCase()} — value ${value.toFixed(3)}`,
+      icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><circle cx=%2212%22 cy=%2212%22 r=%2212%22 fill=%22%23dc2626%22/></svg>'
+    });
+  }
+}
+
 </script>
 </body>
 </html>
